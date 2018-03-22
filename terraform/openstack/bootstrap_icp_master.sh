@@ -59,7 +59,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 /usr/bin/apt-get --assume-yes install docker-ce python python-pip
 
 # Ensure the hostnames are resolvable
-IP=`/sbin/ifconfig eth0 | grep 'inet addr' | cut -d: -f2 | awk '{print $1}'`
+IP=`/sbin/ifconfig ${openstack_network_adapter} | grep 'inet addr' | cut -d: -f2 | awk '{print $1}'`
 /bin/echo "$IP $(hostname)" >> /etc/hosts
 
 # Download and configure IBM Cloud Private

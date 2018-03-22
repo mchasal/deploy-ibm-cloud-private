@@ -58,6 +58,11 @@ variable "openstack_network_name" {
     default = "my_network_name"
 }
 
+variable "openstack_network_adapter" {
+    description = "The name of the network adapter on the VM"
+    default = "eth0"
+}
+
 variable "openstack_ssh_key_file" {
     description = "The path to the private SSH key file"
     default = "<path to the private SSH key file>"
@@ -97,3 +102,15 @@ variable "icp_download_location" {
     description = "HTTP wget location for ICP Enterprise Edition - ignored for community edition"
     default = "http://LOCATION_OF_ICP_ENTERPRISE_EDITION.tar.gz"
 }
+
+variable "openstack_availability_zone" {
+    description = "The availabilty zone to be used"
+    default = "nova"
+}
+
+variable "openstack_security_groups" {
+    type = "list"
+    description = "The security groups to add the instances to"
+    default = [ "default" ]
+}
+
