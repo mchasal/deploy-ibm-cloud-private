@@ -73,13 +73,16 @@ resource "openstack_compute_instance_v2" "icp-master-vm" {
 }
 
 resource "openstack_networking_floatingip_v2" "fip" {
-  pool = "admin_floating_net"
+    pool = "${var.openstack_floating_ip_pool}"
+    count = "${var.openstack_floating_ip_pool != "" ? 1 : 0}"
 }
 
 resource "openstack_compute_floatingip_associate_v2" "fip" {
-  floating_ip = "${openstack_networking_floatingip_v2.fip.address}"
-  instance_id = "${openstack_compute_instance_v2.icp-master-vm.id}"
+    floating_ip = "${openstack_networking_floatingip_v2.fip.address}"
+    instance_id = "${openstack_compute_instance_v2.icp-master-vm.id}"
+    count = "${var.openstack_floating_ip_pool != "" ? 1 : 0}"
 }
+
 
 data "template_file" "bootstrap_init" {
     template = "${file("bootstrap_icp_master.sh")}"
@@ -92,5 +95,7 @@ data "template_file" "bootstrap_init" {
         install_user_name = "${var.icp_install_user}"
         install_user_password = "${var.icp_install_user_password}"
 	openstack_network_adapter = "${var.openstack_network_adapter}"
+	openstack_floating_ip = "${openstack_networking_floatingip_v2.fip.0.address}"
+
     }
 }

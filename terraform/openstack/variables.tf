@@ -114,3 +114,7 @@ variable "openstack_security_groups" {
     default = [ "default" ]
 }
 
+variable "openstack_floating_ip_pool" {
+    description = "Pool for floating ip"
+    default = ""
+}
