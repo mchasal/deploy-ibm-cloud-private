@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 ################################################################
 # Module to deploy IBM Cloud Private
@@ -20,6 +20,10 @@
 # Need to set vm.max_map_count to at least 262144
 /sbin/sysctl -w vm.max_map_count=262144
 /bin/echo "vm.max_map_count=262144" | /usr/bin/tee -a /etc/sysctl.conf
+
+# Ensure the hostname is resolvable
+IP=`/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"/");print a[1]}'`
+/bin/echo "$IP $(hostname)" >> /etc/hosts
 
 # Now for distro dependent stuff
 if [ -f /etc/redhat-release ]; then
@@ -79,9 +83,5 @@ else
             /usr/bin/apt-get --assume-yes install docker-ce 
         fi
 fi
-
-# Ensure the hostname is resolvable
-IP=`/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"/");print a[1]}'`
-/bin/echo "$IP $(hostname)" >> /etc/hosts
 
 exit 0

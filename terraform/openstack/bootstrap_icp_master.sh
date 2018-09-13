@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 ################################################################
 # Module to deploy IBM Cloud Private
@@ -26,17 +26,19 @@ do
 done
 
 # Determine the IBM Cloud Private embedded Docker image name
-if [ "$${iver[0]}" -ge "2" ] && [ "$${iver[1]}" -ge "1" ] &&
-    [ "$${iver[2]}" -ge "0" ] && [ "$${iver[3]}" -ge "3" ]; then
+if [ "$${iver[0]}" -le "2" ] && [ "$${iver[1]}" -le "1" ] &&
+    [ "$${iver[2]}" -le "0" ] && [ "$${iver[3]}" -le "2" ]; then
+    # ICP 2.1.0.2 or earlier
+    if [ "${icp_architecture}" == "ppc64le" ]; then
+        ICP_DOCKER_IMAGE="ibmcom/icp-inception-ppc64le:${icp_version}"
+    else
+        ICP_DOCKER_IMAGE="ibmcom/icp_inception:${icp_version}"
+    fi 
+else
     # ICP 2.1.0.3 or later
     ICP_DOCKER_IMAGE="ibmcom/icp-inception:${icp_version}"
-elif [ "${icp_architecture}" == "ppc64le" ]; then
-    # ICP 2.1.0.2 or earlier ppc64le
-    ICP_DOCKER_IMAGE="ibmcom/icp-inception-ppc64le:${icp_version}"
-else
-    # ICP 2.1.0.2 or earlier x86
-    ICP_DOCKER_IMAGE="ibmcom/icp_inception:${icp_version}"
 fi
+
 if [ "${icp_edition}" == "ee" ]; then
     ICP_DOCKER_IMAGE="$ICP_DOCKER_IMAGE-ee"
 fi
@@ -49,6 +51,11 @@ ICP_ROOT_DIR="/opt/ibm-cloud-private-${icp_edition}"
 # Need to set vm.max_map_count to at least 262144
 /sbin/sysctl -w vm.max_map_count=262144
 /bin/echo "vm.max_map_count=262144" | /usr/bin/tee -a /etc/sysctl.conf
+
+# Ensure the hostnames are resolvable
+IP=`/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"/");print a[1]}'`
+/bin/echo "$IP $(hostname)" >> /etc/hosts
+
 
 # Now for distro dependent stuff
 if [ -f /etc/redhat-release ]; then
@@ -103,10 +110,6 @@ else
         /usr/bin/apt-get --assume-yes install docker-ce
     fi
 fi
-
-# Ensure the hostnames are resolvable
-IP=`/sbin/ip -4 -o addr show dev eth0 | awk '{split($4,a,"/");print a[1]}'`
-/bin/echo "$IP $(hostname)" >> /etc/hosts
 
 # Download and configure IBM Cloud Private
 if [ "${icp_edition}" == "ee" ]; then
